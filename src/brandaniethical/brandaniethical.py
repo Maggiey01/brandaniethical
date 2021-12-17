@@ -117,7 +117,7 @@ def trendyesg(region, start=5):
     region : string
       A string that limit the region of market consumers are interested in, which include US, BR, AU, CA, FR, DE, HK, IN, IT, ES, GB, and SG.
     start : int
-      A int that indicate the ranking .
+      A int that indicate the ranking place to start from.
 
     Returns
     -------
@@ -174,22 +174,27 @@ def trendyesg(region, start=5):
         trendtick_df['maxprice_rank'] = trendtick_df['regularMarketPrice'].rank(method='max')
 
         return trendtick_df.sort_values(by=['maxprice_rank']).iloc[start:start+5]
-
+    
     #get trendy tickers outcome
-    tdf = get_trendycom(region, start=5)
-    #make general search of ticker e.g.
-    ttlist = [i for i in tdf['symbol']]
-    reg_tick = r'(^.+?)-|(^.*)'
-    for tick in ttlist:
-        ticklist=[]
-        try:
-            ticklist = [re.match(reg_tick,tick).group(1) for tick in ttlist]
-            ticklist.extend([re.match(reg_tick,tick).group(2) for tick in ttlist])
-            ticklist = set(ticklist)
-        except Exception as e:
-            print(f'{e}: the ticker is not supported')
-    ticklist = list(filter(None, ticklist))
-
+    tdf = get_trendycom(region=region, start=5)
+    assert tdf.empty == False, f'there is no search results of {region} market'
+    def ticktrans(tdf):
+        #make fuzzy search of ticker e.g.
+        ttlist = [i for i in tdf['symbol']]
+        if region == 'US':
+            reg_tick = '(^.+?)-|(^.*)'
+            for tick in ttlist:
+                try:
+                    ticklist = [re.match(reg_tick,tick).group(1) for tick in ttlist]
+                    ticklist.extend([re.match(reg_tick,tick).group(2) for tick in ttlist])
+                    ticklist = list(filter(None, ticklist))
+                    return ticklist
+                except TypeError as e:
+                    print(f'{e}: the ticker is not supported')
+        else:
+            return ttlist
+    ticktransl = ticktrans(tdf)
+    
     base_url = 'https://tf689y3hbj.execute-api.us-east-1.amazonaws.com/prod/authorization/'
     df = pd.DataFrame()
     company_name=[]
@@ -199,7 +204,7 @@ def trendyesg(region, start=5):
     total=[]
     region=[]
     ticker=[]
-    for brand_tick in ticklist:
+    for brand_tick in ticktransl:
         try:
             response_esg = requests.get(base_url+'search?',params={'q':brand_tick,'token':app_key})
             response_esg.raise_for_status()
@@ -209,14 +214,14 @@ def trendyesg(region, start=5):
             gov_score.append(response_esg.json()[0]['governance_score'])
             total.append(response_esg.json()[0]['total'])
             ticker.append(brand_tick)
-        except IndexError as ind_err:
+        except (IndexError, TypeError) as error:
             company_name.append(brand_tick)
             env_score.append('NA')
             soc_score.append('NA')
             gov_score.append('NA')
             total.append('NA')
             ticker.append(brand_tick)
-            print(f"the company's esg not in database")
+            print(f"{brand_tick}'s esg not in database")
         except HTTPError as http_err:
             print(f'HTTP error occurred: {http_err}')
         except Exception as err: 
@@ -228,3 +233,4 @@ def trendyesg(region, start=5):
     df['total'] = pd.Series(total)
     df['ticker'] = pd.Series(ticker)
     return df
+

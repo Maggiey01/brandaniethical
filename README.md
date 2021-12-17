@@ -55,6 +55,7 @@ Get trendy tickers' company information from Yahoo Finance api and return their 
 region = ['US', 'BR', 'AU', 'CA', 'FR', 'DE', 'HK', 'IN', 'IT', 'ES', 'GB', 'SG']
 Users can make fuzzy search of those trendy tickers by discarding dollar symbol such as usd, cad from trendy tickers search results. For example, shib-usd and shib-cad are both searched with 'shib' keyword, and the esg api only returns the stem ticker symbol.
 Also, due to the rate limit of esg api, I set trendy tickers search results limited in 5 tickers. but users can start at any point of trendy tickers list sorted by market prices, the default is start from the 5th higest market price trendy tickers and return 5-10 trendy tickers esg scores.
+In vignette file, a presentation demo with US region and ranking 8th - 12th higest market price trendy tickers ESG scores are provided in a dataframe. Another demo is US region ranking 10th - 14th higest market price trendy tickers ESG scores, as it can be seen some new tickers did not report their ESG therefore the result dataframe returns NA in according columns. 
 Skills:
 Data Acquisition:
 Import data from json.
