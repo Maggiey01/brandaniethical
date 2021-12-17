@@ -5,6 +5,9 @@ description = "A package for green consumers and investors to quickly get a view
 authors = ["Yang Hu"]
 license = "MIT"
 readme = "README.md"
+documentation = "https://readthedocs.org/projects/brandaniethical/"
+homepage = "https://github.com/Maggiey01/brandaniethical"
+repository = "https://github.com/Maggiey01/brandaniethical"
 
 [tool.poetry.dependencies]
 python = "^3.8"
